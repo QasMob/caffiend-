@@ -107,6 +107,15 @@ export const coffeeOptions = [
 const halfLifeHours = 5
 
 
+
+//  historyData -> {
+//    timestamp: entry: {
+//         name: 'name'
+//     }
+// }
+
+
+
 export function calculateCurrentCaffeineLevel(historyData) {
     const currentTime = Date.now()
     const halfLife = halfLifeHours * 60 * 60 * 1000 // 5 hours in milliseconds
@@ -147,10 +156,12 @@ export function getTopThreeCoffees(historyData) {
             coffeeCount[coffeeName] = 1
         }
     }
-
+    
     // Convert coffeeCount object to an array of [coffeeName, count] and sort by count
     const sortedCoffees = Object.entries(coffeeCount).sort((a, b) => b[1] - a[1])
 
+
+    // count + next count, start at 0
     // Calculate total coffees consumed
     const totalCoffees = Object.values(coffeeCount).reduce((sum, count) => sum + count, 0)
 
@@ -166,6 +177,8 @@ export function getTopThreeCoffees(historyData) {
 
     return topThree
 }
+
+
 
 export function timeSinceConsumption(utcMilliseconds) {
     const now = Date.now()
@@ -195,7 +208,16 @@ export function timeSinceConsumption(utcMilliseconds) {
     return result.trim() // Remove any trailing space
 }
 
-// This function was added during recording
+
+
+// {
+//     "1727579064032": { 
+//                      "name": "Americano",
+//                       "cost": 5.52 
+//                      }
+
+// }
+
 export function calculateCoffeeStats(coffeeConsumptionHistory) {
     const dailyStats = {}
     let totalCoffees = 0

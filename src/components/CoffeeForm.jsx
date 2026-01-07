@@ -1,13 +1,89 @@
 import {coffeeOptions} from '../utils/index'
 import {useState} from 'react'
+import Authentication from './Authentication'
+import Modal from './Modal'
+import { doc, setDoc } from 'firebase/firestore'
 
-export default function CoffeeForm(){
+export default function CoffeeForm(props){
     
+    const {isAuthenticated} = props
+    const [showModal, setShowModal] = useState(false)
     const [selectedCoffee, setSelectedCoffee] = useState(null)
     const [showCoffeeTypes, setShowCoffeeTypes] = useState(false)
-    
+    const [coffeeCost, setCoffeeCost] = useState(0)
+    const [hour, setHour] = useState(0)
+    const [min, setMin] = useState(0)
+
+    const {globalData, setGlobalData, globalUser} = useAuth()
+
+    async function handleSubmitForm(){
+        if (!isAuthenticated){
+            setShowModal(true)
+            return
+        }
+
+          if (!selectedCoffee){
+            return
+        }
+
+
+ 
+
+        try {
+           
+        const newGlobalData = {
+            ...(globalData || {})
+        }
+
+        const nowTime = Date.now()
+
+        const timeToSubtract = (hour * 60 * 60 * 1000) + (min * 60 * 1000)
+
+        const timestamp = nowTime - timeToSubtract
+
+
+        const newData = {
+            name: selectedCoffee,
+            cost: coffeeCost
+        }
+
+
+        newGlobalData[timestamp] = newData
+
+        setGlobalData(newGlobalData)
+
+        const userRef = doc(db, 'users', globalUser.uid)
+        const res = await setDoc(userRef, {
+            [timestamp]: newData
+        }, {merge: true})
+
+        selectedCoffee(null)
+        setHour(0)
+        setMin(0)
+        setCoffeeCost(0)
+
+        } catch(err){
+            console.log(err)
+        }
+
+
+    }
+
+
+
+
+    function handleCloseModal(){
+        setShowModal(false)
+    }
+
+
     return (
         <>
+
+         {showModal && (   
+                <Modal handleCloseModal={handleCloseModal}>
+                <Authentication handleCloseModal={handleCloseModal}/>    
+                </Modal>)}
         <div className="section-header">
             <i className="fa-solid fa-pencil"/>
             <h2>Start Tracking Today</h2>
@@ -37,7 +113,9 @@ export default function CoffeeForm(){
                 <p>n/a</p>
             </button>
         </div>
-    { showCoffeeTypes && (    <select name='coffee-list' id="coffee-list">
+    { showCoffeeTypes && ( <select 
+            onChange={(e) => {setSelectedCoffee(e.target.value)}}
+            name='coffee-list' id="coffee-list">
             <option value={null}>Select type</option>
             {coffeeOptions.map((option, optionIndex) => {
                 return (
@@ -46,12 +124,12 @@ export default function CoffeeForm(){
             })}
         </select>)}
         <h4>Add the cost ($)</h4>
-        <input className='w-full' type='number' placeholder='4.50'/>
+        <input onChange={(e) => {setCoffeeCost(e.target.value)}} value={coffeeCost} className='w-full' type='number' placeholder='4.50'/>
         <h4>Time since consumption</h4>
         <div className='time-entry'>
             <div>
                 <h6>Hours</h6>
-                <select id="hours-select">
+                <select value={hour} onChange={(e) => {setHour(e.target.value)}} id="hours-select">
                     {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
                     .map((hour, hourIndex) => {
                         return (
@@ -62,7 +140,7 @@ export default function CoffeeForm(){
             </div>
              <div>
                 <h6>Mins</h6>
-                <select id="mins-select">
+                <select value={min} onChange={(e) => {setMin(e.target.value)}} id="mins-select">
                     {[0, 5, 10, 15, 30, 45]
                     .map((min, minIndex) => {
                         return (
@@ -72,7 +150,7 @@ export default function CoffeeForm(){
                 </select>
             </div>
         </div>
-        <button>
+        <button onClick={handleSubmitForm}>
             <p>Add Entry</p>
         </button>
         </>
