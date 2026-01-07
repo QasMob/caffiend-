@@ -3,6 +3,7 @@ import {useState} from 'react'
 import Authentication from './Authentication'
 import Modal from './Modal'
 import { doc, setDoc } from 'firebase/firestore'
+import { useAuth } from '../context/AuthContext'
 
 export default function CoffeeForm(props){
     
@@ -26,8 +27,6 @@ export default function CoffeeForm(props){
             return
         }
 
-
- 
 
         try {
            

@@ -7,7 +7,7 @@ import { useAuth } from './context/AuthContext'
 
 function App() {
 
-  const {globalUser, isLoading, globalData} = useAuthuth()
+  const {globalUser, isLoading, globalData} = useAuth()
 
   const isAuthenticated = globalUser
   const isData = globalData && !!Object.keys(globalData || {}).length
